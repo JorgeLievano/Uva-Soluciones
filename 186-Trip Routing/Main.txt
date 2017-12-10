@@ -1,0 +1,384 @@
+import java.io.*;
+import java.util.ArrayList;
+
+
+ class Main {
+
+	
+	class Arista implements Comparable<Arista>{
+
+		static final char SALE='S',ENTRA='E',BIDIRECCION='B';
+		
+		int peso;
+		String identificador;
+		Vertice v1;
+		Vertice v2;
+		char direccion;
+		
+		Arista(String identificador,Vertice v1,Vertice v2,int peso,char direccion){
+			this.direccion=direccion;
+			this.identificador=identificador;
+			this.peso=peso;
+			this.v1=v1;
+			this.v2=v2;
+		}
+		
+		Arista(String identificador,Vertice v1,Vertice v2,int peso){
+			this.identificador=identificador;
+			this.peso=peso;
+			this.v1=v1;
+			this.v2=v2;
+			direccion=BIDIRECCION;
+		}
+
+		@Override
+		public int compareTo(Arista a) {
+			// TODO Auto-generated method stub
+			return identificador.compareTo(a.getIdentificador());
+		}
+
+		
+		Vertice darPar(Vertice v){
+			if(v.compareTo(v1)==0){
+				return v2;
+			}else if(v.compareTo(v2)==0){
+				return v1;
+			}else{
+				return null;
+			}
+		}
+		
+		int getPeso() {
+			return peso;
+		}
+
+		void setPeso(int peso) {
+			this.peso = peso;
+		}
+
+		String getIdentificador() {
+			return identificador;
+		}
+
+		void setIdentificador(String identificador) {
+			this.identificador = identificador;
+		}
+
+		Vertice getV1() {
+			return v1;
+		}
+
+		Vertice getV2() {
+			return v2;
+		}
+
+		char getDireccion() {
+			return direccion;
+		}
+
+		void setDireccion(char direccion) {
+			this.direccion = direccion;
+		}
+		
+	}
+	
+	
+	class Vertice<K extends Comparable<K>,T> implements Comparable<Vertice<K,T>>{
+
+		final static char BLANCO='B',GRIS='G',NEGRO='N';
+		char color;
+		 K llave;
+		T dato;
+		int pos;
+		
+		int distancia;
+		
+		 Vertice(K llave,T dato,int pos){
+			this.llave=llave;
+			this.dato=dato;
+			this.pos=pos;
+			color=BLANCO;
+		
+		}
+		
+		char getColor() {
+			return color;
+		}
+
+		void setColor(char color) {
+			this.color = color;
+		}
+
+		K getLlave() {
+			return llave;
+		}
+
+		void setLlave(K llave) {
+			this.llave = llave;
+		}
+
+		T getDato() {
+			return dato;
+		}
+
+		void setDato(T dato) {
+			this.dato = dato;
+		}
+
+		@Override
+		public int compareTo(Vertice<K,T> v) {
+			// TODO Auto-generated method stub
+			return llave.compareTo(v.getLlave());
+		}
+		
+		boolean itSame(K iden){
+			return(llave.compareTo(iden)==0)?true:false;
+		}
+
+		int getPos() {
+			return pos;
+		}
+
+		void setPos(int pos) {
+			this.pos = pos;
+		}
+
+		int getDistancia() {
+			return distancia;
+		}
+
+		void setDistancia(int distancia) {
+			this.distancia = distancia;
+		}
+		
+	}
+	
+	class ColaMin<U extends Comparable<U>> {
+
+		class Nodo{
+			U dato;
+			Nodo siguiente;
+			double prio;
+			
+			Nodo(U dato,double prioridad){
+				this.dato=dato;
+				siguiente=null;
+				prio=prioridad;
+			}
+			
+			double getPrio(){
+				return prio;
+			}
+			
+			 void setSiguiente(Nodo sig){
+				 siguiente=sig;
+			 }
+			 
+			 Nodo getSiguiente(){
+				 return siguiente;
+			 }
+			 
+			 U getDato(){
+				 return dato;
+			 }
+			 
+			  double Compareto(Nodo otro){
+				 return prio-otro.getPrio();
+			 }
+		}
+		
+		Nodo raiz;
+		
+		ColaMin(){
+			raiz=null;
+		}
+		
+		void insertar(U dato,double prio){
+			Nodo nuevo=new Nodo(dato,prio);
+			if(raiz==null){
+				raiz=nuevo;
+			}else{
+				if(nuevo.Compareto(raiz)<0){
+					nuevo.setSiguiente(raiz);
+					raiz=nuevo;
+				}else{
+					Nodo ref=raiz;
+					while(ref.Compareto(nuevo)<0 && ref.getSiguiente()!=null){
+						ref=ref.getSiguiente();
+					}
+					nuevo.setSiguiente(ref.getSiguiente());
+					ref.setSiguiente(nuevo);
+				}
+			}
+		}
+		
+		U getMin(){
+			Nodo r=raiz;
+			raiz=raiz.getSiguiente();
+			r.setSiguiente(null);
+			return r.getDato();
+		}
+		
+		boolean vacio(){
+			return(raiz==null)?true:false;
+		}
+
+	}
+	
+	class GrafoLista<K extends Comparable<K>,T> {
+		int cont;
+		ArrayList<Vertice<K,T>> vertices;
+		ArrayList<ArrayList<Arista>> aristas;
+	
+		GrafoLista(){
+			vertices= new ArrayList<Vertice<K,T>>();
+			aristas= new ArrayList<ArrayList<Arista>>();
+			cont=0;
+		}
+			
+		void insertarVertice(K llave,T dato){
+			
+			if(buscarVertice(llave)==null){
+			Vertice<K,T> n=new Vertice<K,T>(llave, dato, cont);
+			aristas.add(cont,new ArrayList<Arista>());
+			cont+=1;
+			vertices.add(n);
+			}
+			
+		}
+		
+		 Vertice<K,T> buscarVertice(K llave){
+			Vertice<K,T> re=null;
+			if(vertices.size()<1){
+				return null;
+			}else{
+			boolean salir=false;
+			for(int i=0;i<vertices.size() && !salir;i++){
+				if(vertices.get(i).itSame(llave)){
+					re=vertices.get(i);
+					salir=true;
+				}
+			}
+			}
+			return re;
+		}
+		
+		
+		 void insertarArista(String iden,K v1,K v2,int peso){
+			Vertice<K,T> a=buscarVertice(v1);
+			Vertice<K,T> b=buscarVertice(v2);
+			if(a!=null && b!=null){
+				insertarArista(iden,a,b,peso);
+			}
+			
+		}
+		
+		 void insertarArista(String iden,Vertice a,Vertice b,int peso){
+			Arista n=new Arista(iden, a,b,peso);
+			int i=vertices.indexOf(a);
+			aristas.get(i).add(n);
+			i=vertices.indexOf(b);
+			aristas.get(i).add(n);
+		}
+		
+		 int darIndice(K llave){
+			for(int i=0;i<vertices.size();i++){
+				if(vertices.get(i).itSame(llave)){
+					return i;
+				}
+			}
+			return -1;
+		}
+		
+		Arista[] dijkstra(K ini){
+			Arista[] camino=new Arista[vertices.size()];
+			Vertice<K,T> s=buscarVertice(ini);
+			for(int i=0;i<vertices.size();i++){
+				vertices.get(i).setDistancia(Integer.MAX_VALUE);
+				vertices.get(i).setColor(Vertice.BLANCO);
+				camino[i]=null;
+			}
+			s.setDistancia(0);
+			camino[s.getPos()]=null;
+			ColaMin<Vertice<K,T>> q=new ColaMin<Vertice<K,T>>();
+			q.insertar(s,s.getDistancia());
+			
+			while(!(q.vacio())){
+				s=q.getMin();
+				s.setColor(Vertice.GRIS);
+				for(int i=0;i < this.aristas.get(s.getPos()).size();i++){
+					Arista aris=aristas.get(s.getPos()).get(i);
+					Vertice v=aris.darPar(s);
+					if(v.getColor()!=Vertice.GRIS && v.getDistancia()>s.getDistancia()+aris.getPeso()){
+						v.setDistancia(s.getDistancia()+aris.getPeso());
+						camino[v.getPos()]=aris;
+						q.insertar(v,v.getDistancia());
+					}
+				}
+				
+			}
+			return camino;
+		}
+		
+	}
+	
+	GrafoLista<String,String> grafo;
+	
+	
+	void run(){
+		try {
+		 grafo=new GrafoLista<String,String>();
+		BufferedReader bf=new BufferedReader(new InputStreamReader(System.in));
+		String linea;
+		while((linea = bf.readLine())!=null && linea.length()!=0) {
+	          String[] dat=linea.split(",");
+	        grafo.insertarVertice(dat[0], dat[0]);
+	        grafo.insertarVertice(dat[1], dat[1]);
+	       	grafo.insertarArista(dat[2], dat[0], dat[1], Integer.parseInt(dat[3]));
+	      }
+		
+			while((linea=bf.readLine())!=null){
+				System.out.println();
+				System.out.println();
+				String[] ca=linea.split(",");
+				buscar(ca[0],ca[1]);
+			}
+			
+			bf.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+	}
+	
+     void buscar(String vIni,String Vfin){
+		
+		Arista[] v=grafo.dijkstra(vIni);
+		String a="";
+		Vertice objetivo=grafo.buscarVertice(Vfin);
+		int total=objetivo.getDistancia();
+		int destino=objetivo.getPos();
+		Arista ref=v[destino];
+		
+		while(ref!=null){
+			a=String.format("%1$-21s",ref.darPar(objetivo).getLlave())+String.format("%1$-21s",objetivo.getLlave())+String.format("%1$-11s",ref.getIdentificador())+String.format("%1$5s", ref.getPeso())+"\n"+a;
+			objetivo=ref.darPar(objetivo);
+			ref=v[objetivo.getPos()];
+		}
+		
+		System.out.println("From                 To                   Route      Miles");
+		System.out.println( "-------------------- -------------------- ---------- -----");
+		System.out.print(a);
+		System.out.println("                                                     -----");
+		System.out.println("                                          "+"Total      "+String.format("%1$5s",""+total));
+	}
+	
+     
+    public static void main(String[] args){
+    	Main m=new Main();
+    	m.run();
+    }
+}
